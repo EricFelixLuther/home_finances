@@ -1,3 +1,9 @@
 .cursor_hand {
     cursor: pointer;
 }
+
+div#addNewTransactionButton {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+}
