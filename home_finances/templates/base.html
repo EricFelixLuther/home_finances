@@ -1,0 +1,31 @@
+{% load static django_bootstrap5 %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ page_title|default_if_none:"Title" }}</title>
+	<script src="{% static 'jquery.min.js' %}"></script>
+	{% bootstrap_javascript %}
+	<script src="{% static 'fontawesome-free-5.5.0-web/js/all.min.js' %}"></script>
+	<script src="{% static 'js/masonry.js' %}"></script>
+	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
+	<link rel="stylesheet" type="text/css" href="{% static 'fontawesome-free-5.5.0-web/css/all.min.css' %}" />
+	{% bootstrap_css %}
+	{% bootstrap_messages %}
+	<meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+	{% block extra_css %}{% endblock %}
+	{% block extra_js %}{% endblock %}
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="row">
+			<div id="contents" class="col bg-light text-center m-2">
+				{% block contents %}{% endblock %}
+			</div>
+		</div>
+	</div>
+	{% block modals %}{% endblock %}
+</body>
+
+</html>
