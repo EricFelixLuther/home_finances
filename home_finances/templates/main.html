@@ -17,9 +17,9 @@
                 ).append(
                     $("<td>").append(li.amount)
                 ).append(
-                    $("<td>").append(li.user)
+                    $("<td>").append(li.user.first_name)
                 ).append(
-                    $("<td>").append(li.category)
+                    $("<td>").append(li.category.name)
                 )
                 $("#operationsTable").append(tr);
             }
