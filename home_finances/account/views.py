@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms import modelformset_factory
 from django.shortcuts import render
 from django.views import View
@@ -5,7 +6,7 @@ from django.views import View
 from account.models import Operation
 
 
-class MainView(View):
+class MainView(LoginRequiredMixin, View):
     template_name = 'main.html'
 
     def get(self, request):
