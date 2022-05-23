@@ -12,7 +12,10 @@ class MainView(LoginRequiredMixin, View):
     def get(self, request):
         formset = modelformset_factory(Operation, fields="__all__")
         return render(request, self.template_name,
-                      context={"formset": formset(queryset=Operation.objects.none())})
+                      context={"formset": formset(
+                          queryset=Operation.objects.none(),
+                          initial=[{"user": request.user}]
+                      )})
 
     def post(self, request):
         formset = modelformset_factory(

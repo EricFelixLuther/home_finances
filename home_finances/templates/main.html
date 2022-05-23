@@ -27,15 +27,45 @@
             console.log(data);
             alert("Error");
         })
-        $.ajaxStop(function(event, xhr, settings) {
+    }
+    var cloneTransaction = function(){
+    	let total_form = $('#id_form-TOTAL_FORMS');
+		let form_idx = total_form.val();
 
-        })
+		let parent = $(this).parent().parent();
+		let new_parent = parent.clone();
+		new_parent.attr('id', form_idx);
+		new_parent.find("input, select").each(function(){
+			let id_ = $(this).attr("id");
+			id_ = id_.replace(/\d+/, function(val) { return form_idx; });
+			$(this).attr("id", id_);
+			let name = $(this).attr("name");
+			name = name.replace(/\d+/, function(val) { return form_idx; });
+			$(this).attr("name", name);
+		});
+		new_parent.find(".transactionClone").click(cloneTransaction);
+		new_parent.insertAfter(parent);
+
+		total_form.val(parseInt(form_idx)+1);
     }
     $(document).ready(function(){
         getTransactions();
-        $("#addTransactionModalSave").onclick(function(){
-        	$("#transactionModalFormset").submit();
-        });
+        $(".transactionClone").click(cloneTransaction);
+        $('#addTransactionModalEmpty').click(function () {
+			let total_form = $('#id_form-TOTAL_FORMS');
+			let form_idx = total_form.val();
+
+			$('#addTransactionsTable')
+			.append(
+				$('#empty_form')
+				.html()
+				.replace(/__prefix__/g, form_idx)
+				.replace("TR_ID", form_idx)
+			);
+			$("tr[id=" + form_idx + "]").find(".transactionClone").click(cloneTransaction);
+			total_form.val(parseInt(form_idx)+1);
+		});
+		$("select#id_form-__prefix__-user").find("option[value={{ request.user.id }}]").attr("selected", "true");
     });
 </script>
 {% endblock %}
@@ -81,17 +111,18 @@
 								<th>Amount</th>
 								<th>Category</th>
 								<th>Who</th>
+								<th></th>
 								<th>Clone</th>
 							</tr>
 						</thead>
 						<tbody id="addTransactionsTable">
 						{% for form in formset %}
-						<tr class="addTransactionsTableRow">
+						<tr class="addTransactionsTableRow" id="{{ forloop.counter0 }}">
 							{% for field in form %}
 								<td>{% bootstrap_field field show_label=False %}</td>
 							{% endfor %}
 							<td>
-								<button id="addTransactionModelCopy" type="button" class="btn btn-secondary">
+								<button type="button" class="btn btn-secondary transactionClone">
 									<i class="far fa-clone"></i>
 								</button>
 							</td>
@@ -115,5 +146,19 @@
 		</div>
 	</div>
 </div>
+<table class="d-none">
+	<tbody id="empty_form">
+		<tr class="addTransactionsTableRow" id="TR_ID">
+		{% for field in formset.empty_form %}
+			<td>{% bootstrap_field field show_label=False %}</td>
+		{% endfor %}
+			<td>
+				<button type="button" class="btn btn-secondary transactionClone">
+					<i class="far fa-clone"></i>
+				</button>
+			</td>
+		</tr>
+	</tbody>
+</table>
 
 {% endblock %}
