@@ -33,6 +33,7 @@
 		let form_idx = total_form.val();
 
 		let parent = $(this).parent().parent();
+		let parent_index = parent.attr("id");
 		let new_parent = parent.clone();
 		new_parent.attr('id', form_idx);
 		new_parent.find("input, select").each(function(){
@@ -42,6 +43,13 @@
 			let name = $(this).attr("name");
 			name = name.replace(/\d+/, function(val) { return form_idx; });
 			$(this).attr("name", name);
+		});
+		new_parent.find("select").each(function(){
+			let this_name_split = $(this).attr("name").split("-");
+			let this_name = this_name_split[2];
+			let selector = "select[name=form-" + parent_index + "-" + this_name + "]";
+			let cloned_row_val = $(selector).val();
+			$(this).val(cloned_row_val);
 		});
 		new_parent.find(".transactionClone").click(cloneTransaction);
 		new_parent.insertAfter(parent);
