@@ -28,6 +28,7 @@
             alert("Error");
         })
     }
+
     var cloneTransaction = function(){
     	let total_form = $('#id_form-TOTAL_FORMS');
 		let form_idx = total_form.val();
@@ -56,9 +57,22 @@
 
 		total_form.val(parseInt(form_idx)+1);
     }
+
+    var plusOrMinus = function(){
+    	let inp = $(this).parent().parent().prev().find("input")
+    	let inpVal = inp.val();
+    	if(
+    		($(this).prop("checked") == true && inpVal < 0) ||
+    		($(this).prop("checked") == false && inpVal > 0)
+		){
+			inpVal *= -1
+    	}
+    	inp.val(inpVal);
+    }
     $(document).ready(function(){
         getTransactions();
         $(".transactionClone").click(cloneTransaction);
+        $(".form-check-input").click(plusOrMinus);
         $('#addTransactionModalEmpty').click(function () {
 			let total_form = $('#id_form-TOTAL_FORMS');
 			let form_idx = total_form.val();
@@ -117,6 +131,7 @@
 								<th>Name</th>
 								<th>Time</th>
 								<th>Amount</th>
+								<th>-/+</th>
 								<th>Category</th>
 								<th>Who</th>
 								<th></th>
@@ -127,6 +142,13 @@
 						{% for form in formset %}
 						<tr class="addTransactionsTableRow" id="{{ forloop.counter0 }}">
 							{% for field in form %}
+								{% if forloop.counter == 4 %}
+									<td>
+										<div class="form-check form-switch">
+											<input class="form-check-input" type="checkbox">
+										</div>
+									</td>
+								{% endif %}
 								<td>{% bootstrap_field field show_label=False %}</td>
 							{% endfor %}
 							<td>
@@ -158,6 +180,13 @@
 	<tbody id="empty_form">
 		<tr class="addTransactionsTableRow" id="TR_ID">
 		{% for field in formset.empty_form %}
+			{% if forloop.counter == 4 %}
+				<td>
+					<div class="form-check form-switch">
+				  		<input class="form-check-input" type="checkbox">
+					</div>
+				</td>
+			{% endif %}
 			<td>{% bootstrap_field field show_label=False %}</td>
 		{% endfor %}
 			<td>
