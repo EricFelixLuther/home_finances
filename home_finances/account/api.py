@@ -12,6 +12,7 @@ class OperationsViewSet(YearMixin, viewsets.ModelViewSet):
     serializer_class = OperationSerializer
     queryset = Operation.objects.all().order_by("-date", "title")
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         year = self._get_year(self.request)
