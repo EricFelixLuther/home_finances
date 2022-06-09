@@ -66,32 +66,32 @@ class LineView(LoginRequiredMixin, YearMixin, View):
             )
         ).values()
         df = pandas.DataFrame(list(operations))
-        df["kumulatywnie"] = df['kasa'].cumsum()  # kumulatywna kolumna oszczędności
-        krzysiek = df[df['kto'] == 'Krzysiek']  # Wydatki Krzyśka
-        agata = df[df['kto'] == 'Agata']  # Wydatki Agaty
+        df["kumulatywnie"] = df['amount'].cumsum()  # kumulatywna kolumna oszczędności
+        # krzysiek = df[df['kto'] == 'Krzysiek']  # Wydatki Krzyśka
+        # agata = df[df['kto'] == 'Agata']  # Wydatki Agaty
 
         # Dane
         today = date.today()
         year_start = date(today.year, 1, 1)
         days_since_start = (today - year_start).days
         cel = 50000
-        saved = df['kasa'].sum()
+        # saved = df['kasa'].sum()
         should_be_saved_by_today = (cel / 365) * days_since_start
 
         # Utwórz wykres
         p = figure(width=900, height=1000, x_axis_type='datetime')
 
         # Dodaj wykresy wydatków
-        p.line(df['data'], df['kumulatywnie'], color="Black", alpha=1.0, line_color="Black",
+        p.line(df['date'], df['kumulatywnie'], color="Black", alpha=1.0, line_color="Black",
                legend_label="Przychody/rozchody całkowite")
         # p.circle(df['data'], df['kumulatywnie'], color="Black", alpha = 1.0, line_color="Black", legend_label="Przychody/rozchody dokładnie")
         # p.circle(krzysiek['data'], krzysiek['kumulatywnie'], color="Blue", alpha = 1.0, line_color="Blue", legend_label="Przychody/rozchody Krzyśka")
         # p.circle(agata['data'], agata['kumulatywnie'], color="Red", alpha = 1.0, line_color="Red", legend_label="Przychody/rozchody Agaty")
 
         # Linie orientacyjne
-        p.line(df['data'], 0, color="Red", alpha=1.0, line_color="Red", legend_label="Granica zero")
-        p.line(df['data'], cel, color="Green", alpha=1.0, line_color="Green", legend_label="Cel na rok 2021")
-        p.line(df['data'], should_be_saved_by_today, color="Yellow", alpha=1.0, line_color="Yellow",
+        p.line(df['date'], 0, color="Red", alpha=1.0, line_color="Red", legend_label="Granica zero")
+        p.line(df['date'], cel, color="Green", alpha=1.0, line_color="Green", legend_label="Cel na rok 2021")
+        p.line(df['date'], should_be_saved_by_today, color="Yellow", alpha=1.0, line_color="Yellow",
                legend_label="Powinno być na dziś")
 
         # Legenda
@@ -101,3 +101,4 @@ class LineView(LoginRequiredMixin, YearMixin, View):
         p.legend.title_text_font_size = '20pt'
 
         script, div = components(p)
+        return render(request, self.template_name, {"script": script, "div": div})

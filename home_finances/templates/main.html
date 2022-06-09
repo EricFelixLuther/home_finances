@@ -79,29 +79,7 @@
 {% endblock %}
 
 {% block contents %}
-<ul class="nav nav-tabs" id="myTab" role="tablist">
-	<li class="nav-item" role="presentation">
-		<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Years</a>
-		<ul class="dropdown-menu">
-			{% for each_year in all_years %}
-				<li>
-					<a class="dropdown-item" href="/?year={{ each_year }}">
-						{{ each_year }}
-					</a>
-				</li>
-			{% endfor %}
-		</ul>
-	</li>
-	<li class="nav-item dropdown">
-		<button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Operations</button>
-	</li>
-	<li class="nav-item dropdown">
-		<button class="nav-link" id="line-tab" data-bs-toggle="tab" data-bs-target="#line" type="button" role="tab" aria-controls="home" aria-selected="true">Line</button>
-	</li>
-	<li class="nav-item">
-		<a class="nav-link" href="#">Link</a>
-	</li>
-</ul>
+{% include "navbar.html" %}
 
 <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
 	<table class="table">
@@ -118,7 +96,7 @@
 	</table>
 </div>
 <div class="tab-pane fade show active" id="line" role="tabpanel" aria-labelledby="home-tab">
-2
+{{div | safe}}
 </div>
 
 <div id="addNewTransactionButton">

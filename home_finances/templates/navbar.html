@@ -1,0 +1,29 @@
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+	<li class="nav-item" role="presentation">
+		<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Years</a>
+		<ul class="dropdown-menu">
+			{% for each_year in all_years %}
+				<li>
+					<a class="dropdown-item" href="/?year={{ each_year }}">
+						{{ each_year }}
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+	</li>
+	<li class="nav-item dropdown">
+		{% comment %}
+		<button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Operations</button>
+		{% endcomment %}
+		<a href="/" class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Operations</a>
+	</li>
+	<li class="nav-item dropdown">
+		{% comment %}
+		<button class="nav-link" id="line-tab" data-bs-toggle="tab" data-bs-target="#line" type="button" role="tab" aria-controls="home" aria-selected="true">Line</button>
+		{% endcomment %}
+		<a href="/line" class="nav-link" id="line-tab" aria-controls="line" aria-selected="true">Line</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link" href="#">Link</a>
+	</li>
+</ul>
