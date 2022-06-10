@@ -1,8 +1,6 @@
 from datetime import date
 
 from rest_framework import viewsets, permissions
-from rest_framework.views import APIView
-
 from account.models import Operation
 from account.serializers import OperationSerializer
 from account.year_mixin import YearMixin

@@ -25,7 +25,7 @@
             }
         }).fail(function(data){
             console.log(data);
-            alert("Error");
+            alert("Error. Check console logs.");
         })
     }
     var cloneTransaction = function(){
@@ -56,8 +56,23 @@
 
 		total_form.val(parseInt(form_idx)+1);
     }
+
+    var getChart = function(url){
+    	$.ajax({
+            type: 'GET',
+            url: url + "?year={{ year }}",
+        })
+        .done(function(data){
+            $("#line").append(data.div);
+            $("html").append(data.script);
+        }).fail(function(data){
+            console.log(data);
+            alert("Error while getting line chart. Check console logs.");
+        })
+    }
     $(document).ready(function(){
         getTransactions();
+        getChart("{% url 'line_chart' %}");
         $(".transactionClone").click(cloneTransaction);
         $('#addTransactionModalEmpty').click(function () {
 			let total_form = $('#id_form-TOTAL_FORMS');
@@ -78,29 +93,36 @@
 </script>
 {% endblock %}
 
+{% block extra_css %}
+<link href=”http://cdn.pydata.org/bokeh/release/bokeh-2.4.3.min.css" rel=”stylesheet” type=”text/css”>
+<link href=”http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.4.3.min.css" rel=”stylesheet” type=”text/css”>
+{% endblock %}
+
 {% block contents %}
 {% include "navbar.html" %}
 
-<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Time</th>
-				<th>Name</th>
-				<th>Amount</th>
-				<th>Who</th>
-				<th>Category</th>
-			</tr>
-		</thead>
-		<tbody id="operationsTable"></tbody>
-	</table>
-</div>
-<div class="tab-pane fade show active" id="line" role="tabpanel" aria-labelledby="home-tab">
-{{div | safe}}
+<div class="tab-content" id="myTabContent">
+	<div class="tab-pane fade active show" id="home" role="tabpanel" aria-labelledby="home-tab">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Time</th>
+					<th>Name</th>
+					<th>Amount</th>
+					<th>Who</th>
+					<th>Category</th>
+				</tr>
+			</thead>
+			<tbody id="operationsTable"></tbody>
+		</table>
+	</div>
+	<div class="tab-pane fade" id="line" role="tabpanel" aria-labelledby="home-tab">
+	{{div | safe}}
+	</div>
 </div>
 
 <div id="addNewTransactionButton">
-	<button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#addTransactionsModal">
+	<button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addTransactionsModal">
 	  <i class="fas fa-edit mr-1"></i>Add new transactions
 	</button>
 </div>
@@ -176,4 +198,11 @@
 	</tbody>
 </table>
 
+{% endblock %}
+
+{% block more_js %}
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.4.3.min.js"></script>
 {% endblock %}
