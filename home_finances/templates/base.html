@@ -7,13 +7,23 @@
 	<script src="{% static 'jquery.min.js' %}"></script>
 	{% bootstrap_javascript %}
 	<script src="{% static 'fontawesome-free-5.5.0-web/js/all.min.js' %}"></script>
-	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
 	<link rel="stylesheet" type="text/css" href="{% static 'fontawesome-free-5.5.0-web/css/all.min.css' %}" />
 	{% bootstrap_css %}
 	{% bootstrap_messages %}
 	<meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
-	{% block extra_css %}{% endblock %}
 	{% block extra_js %}{% endblock %}
+	<style type="text/css">
+		.cursor_hand {
+			cursor: pointer;
+		}
+
+		div#addNewTransactionButton {
+		  position: fixed;
+		  bottom: 10px;
+		  right: 10px;
+		}
+	</style>
+	{% block extra_css %}{% endblock %}
 </head>
 
 <body>
@@ -26,5 +36,5 @@
 	</div>
 	{% block modals %}{% endblock %}
 </body>
-
+{% block more_js %}{% endblock %}
 </html>

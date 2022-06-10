@@ -17,9 +17,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class OperationSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-    user = UserSerializer()
+    category = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Operation
         fields = ('title', 'date', 'amount', 'category', 'user')
+
+    def get_user(self, obj):
+        return obj.user.first_name
+
+    def get_category(self, obj):
+        if obj.category:
+            return obj.category.name
+        else:
+            return ''
