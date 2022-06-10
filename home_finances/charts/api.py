@@ -2,7 +2,10 @@ from datetime import date
 
 import pandas
 from bokeh.embed import components
+from bokeh.models import ColumnDataSource, FactorRange
 from bokeh.plotting import figure
+from bokeh.transform import factor_cmap
+from django.db.models import Count, Sum
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -45,7 +48,7 @@ class LineChartApiView(YearMixin, APIView):
         should_be_saved_by_today = (cel / 365) * days_since_start
 
         # Utwórz wykres
-        p = figure(width=900, height=1000, x_axis_type='datetime')
+        p = figure(width=1600, height=850, x_axis_type='datetime')
 
         # Dodaj wykresy wydatków
         p.line(df['date'], df['kumulatywnie'], color="Black", alpha=1.0, line_color="Black",
@@ -68,3 +71,48 @@ class LineChartApiView(YearMixin, APIView):
 
         script, div = components(p)
         return Response({"script": script, "div": div}, template_name=self.template_name)
+
+
+class ExpensesBarChartApiView(YearMixin, APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
+
+    def get(self, request):
+        year = self._get_year(request)
+        operations = Operation.objects.filter(
+            date__gte=date(
+                year=year,
+                month=1,
+                day=1
+            )
+        ).filter(
+            date__lte=date(
+                year=year,
+                month=12,
+                day=31
+            )
+        )
+        months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        data = {'months': months,
+                'expense': [0 for i in range(len(months))],
+                'gain': [0 for i in range(len(months))]}
+        palette = ["#11e812", "#e84d60"]
+        for each in operations:
+            if each.amount > 0:
+                data['gain'][each.date.month - 1] += each.amount
+            else:
+                data['expense'][each.date.month - 1] += (each.amount * -1)
+        x = [(month, amount) for month in months for amount in ('gain', 'expense')]
+        values = sum(zip(data['gain'], data['expense']), ())
+        source = ColumnDataSource(data=dict(x=x, values=values))
+        p = figure(width=1600, height=850, x_range=FactorRange(*x), title="Expenses and gains per month")
+        p.vbar(x="x", top="values", width=0.9, source=source, fill_color=factor_cmap(
+            'x', palette=palette, factors=['gain', 'expense'], start=1, end=2
+        ))
+        script, div = components(p)
+        return Response({"script": script, "div": div})
+
+# Additional charts:
+# - expenses / gains per month - slupki
+# - expenses / gains per person - circle
+# - expenses per category - circle
