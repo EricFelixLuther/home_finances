@@ -74,6 +74,8 @@
         getTransactions();
         getChart("{% url 'line_chart' %}", "#line");
         getChart("{% url 'expenses_chart' %}", "#expenses");
+        getChart("{% url 'expenses_pie' %}", "#pie");
+        getChart("{% url 'categories_pie' %}", "#category-pie");
         $(".transactionClone").click(cloneTransaction);
         $('#addTransactionModalEmpty').click(function () {
 			let total_form = $('#id_form-TOTAL_FORMS');
@@ -119,6 +121,8 @@
 	</div>
 	<div class="tab-pane fade" id="line" role="tabpanel" aria-labelledby="line-tab"></div>
 	<div class="tab-pane fade" id="expenses" role="tabpanel" aria-labelledby="expenses-tab"></div>
+	<div class="tab-pane fade" id="pie" role="tabpanel" aria-labelledby="pie"></div>
+	<div class="tab-pane fade" id="category-pie" role="tabpanel" aria-labelledby="category-pie"></div>
 </div>
 
 <div id="addNewTransactionButton">
