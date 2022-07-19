@@ -216,3 +216,5 @@ class ExpensesCategoriesPieChartYearSummary(OperationsChartApiMixin, APIView):
 
 # TODO Additional charts:
 # - expenses / gains per person - circle
+# - expenses per tag - single tag bar per month
+# - expenses per category - stacked bars per month with differentation per person
