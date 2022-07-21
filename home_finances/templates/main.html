@@ -71,6 +71,7 @@
         .done(function(data){
         	messageBox("Saved!", "success");
         	refreshTransactionRow(data);
+        	emptyAllCharts();
         }).fail(function(data){
             console.error(data);
             messageBox("Error while editing operation. Check console logs.", "danger");
@@ -117,24 +118,46 @@
     }
 
     var getChart = function(url, div_id){
-    	$.ajax({
-            type: 'GET',
-            url: url + "?year={{ year }}",
-        })
-        .done(function(data){
-            $(div_id).append(data.div);
-            $("html").append(data.script);
-        }).fail(function(data){
-            console.error(data);
-            messageBox("Error while getting '" + div_id + "' chart. Check console logs.", "warning");
-        })
+    	if($(div_id).is(":empty")){
+    		$.ajax({
+				type: 'GET',
+				url: url + "?year={{ year }}",
+			})
+			.done(function(data){
+				$(div_id).append(data.div);
+				$("html").append(data.script);
+			}).fail(function(data){
+				console.error(data);
+				messageBox("Error while getting '" + div_id + "' chart. Check console logs.", "warning");
+			});
+    	}
     }
+
+	var getLineChart = function(){
+		getChart("{% url 'line_chart' %}", "#line");
+	}
+
+	var getExpensesBarChart = function(){
+		getChart("{% url 'expenses_bar' %}", "#expenses");
+	}
+
+	var getExpensesPieChart = function(){
+		getChart("{% url 'expenses_pie' %}", "#pie");
+	}
+
+	var getCategoriesPieChart = function(){
+		getChart("{% url 'categories_pie' %}", "#category-pie");
+	}
+
+	var emptyAllCharts = function(){
+		$("#line").empty();
+		$("#expenses").empty();
+		$("#pie").empty();
+		$("#category-pie").empty();
+	}
     $(document).ready(function(){
         getTransactions();
-        getChart("{% url 'line_chart' %}", "#line");
-        getChart("{% url 'expenses_bar' %}", "#expenses");
-        getChart("{% url 'expenses_pie' %}", "#pie");
-        getChart("{% url 'categories_pie' %}", "#category-pie");
+
         $(".transactionClone").click(cloneTransaction);
 
         $('#addTransactionModalEmpty').click(function () {
