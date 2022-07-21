@@ -3,13 +3,20 @@
 
 {% block extra_js %}
 <script type="text/javascript">
+	var opId = null;
+
     var getTransactions = function(){
         $.ajax({
             type: 'GET',
-            url: "api/operations/?year={{ year }}",
+            url: "{% url 'get_operations' %}?year={{ year }}",
         })
         .done(function(data){
             for (let li of data) {
+            	if (li.category != null){
+            		var category_name = li.category.name;
+            	} else {
+            		var category_name = '';
+				}
                 var tr = $("<tr>").append(
                     $("<td>").append(li.date)
                 ).append(
@@ -17,10 +24,27 @@
                 ).append(
                     $("<td>").append(li.amount)
                 ).append(
-                    $("<td>").append(li.user)
+                    $("<td>").append(li.user.name)
                 ).append(
-                    $("<td>").append(li.category)
+                    $("<td>").append(category_name)
+                ).append(
+                	$("<td>").append(
+                		$("<button>")
+                		.addClass("btn btn-outline-warning")
+                		.on("click", editTransaction)
+                		.attr("data-bs-toggle", "modal")
+                		.attr("data-bs-target", "#editTransactionsModal")
+                		.attr("op-id", li.pk)
+                		.text("Edit")
+                	).addClass(
+                		"invisible"
+                	)
                 )
+                tr.hover(function(){
+                	$(this).children().last().removeClass("invisible").addClass("visible");
+                }, function(){
+                	$(this).children().last().removeClass("visible").addClass("invisible");
+                })
                 $("#operationsTable").append(tr);
             }
         }).fail(function(data){
@@ -28,6 +52,45 @@
             alert("Error. Check console logs.");
         })
     }
+
+	var editTransaction = function(event){
+		opId = event.target.getAttribute("op-id");
+		var Url = "{% url 'get_op_by_id' 0 %}?year={{ year }}".replace('0', opId);
+		console.log(Url);
+		const otherParams = {
+			headers:{"content-type":"application/json; charset=UTF-8"},
+			method:"GET"
+		}
+		fetch(Url, otherParams)
+		.then(response=>response.json())
+		.then(data=>{
+			console.log(data)
+			console.log(data.category.id);
+			console.log(data.user.id);
+			$("#id_title").val(data.title);
+			$("#id_date").val(data.date);
+			$("#id_amount").val(parseFloat(data.amount));
+			$("#id_category").val(data.category.id);
+			$("#id_user").val(data.user.id);
+		})
+	}
+
+	var putEditedTransaction = function(){
+		console.log(opId);
+		$.ajax({
+            type: 'PUT',
+            url: "{% url 'get_op_by_id' 0 %}?year={{ year }}".replace("0", opId),
+            headers: {"X-CSRFToken": $("input:hidden[name=csrfmiddlewaretoken]").val()},
+            data: $("#transactionEditModalForm").serialize()
+        })
+        .done(function(data){
+        	alert("success!");
+        }).fail(function(data){
+            console.log(data);
+            alert("Error while editing operation. Check console logs.");
+        })
+	}
+
     var cloneTransaction = function(){
     	let total_form = $('#id_form-TOTAL_FORMS');
 		let form_idx = total_form.val();
@@ -114,6 +177,7 @@
 					<th>Amount</th>
 					<th>Who</th>
 					<th>Category</th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody id="operationsTable"></tbody>
@@ -187,6 +251,29 @@
 		</div>
 	</div>
 </div>
+
+<div id="editTransactionsModal" class="modal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Add more transactions</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<form id="transactionEditModalForm" method="POST">
+				<div class="modal-body">
+					{% bootstrap_form form layout=vertical %}
+					{% bootstrap_form_errors form %}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success" onclick="putEditedTransaction()">
+						<i class="fas fa-save"></i> Save
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
 <table class="d-none">
 	<tbody id="empty_form">
 		<tr class="addTransactionsTableRow" id="TR_ID">
