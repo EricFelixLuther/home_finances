@@ -18,15 +18,15 @@
             		var category_name = '';
 				}
                 var tr = $("<tr>").append(
-                    $("<td>").append(li.date)
+                    $("<td>").addClass("dateCell").append(li.date)
                 ).append(
-                    $("<td>").append(li.title)
+                    $("<td>").addClass("titleCell").append(li.title)
                 ).append(
-                    $("<td>").append(li.amount)
+                    $("<td>").addClass("amountCell").append(li.amount)
                 ).append(
-                    $("<td>").append(li.user.name)
+                    $("<td>").addClass("userCell").append(li.user.name)
                 ).append(
-                    $("<td>").append(category_name)
+                    $("<td>").addClass("categoryCell").append(category_name)
                 ).attr("op-id", li.pk)
                 .attr("data-bs-toggle", "modal")
 				.attr("data-bs-target", "#editTransactionsModal")
@@ -43,6 +43,7 @@
 	var editTransaction = function(event){
 		console.debug(event);
 		opId = event.currentTarget.getAttribute("op-id");
+		console.debug("Currently editing: " + opId);
 		var Url = "{% url 'get_op_by_id' 0 %}?year={{ year }}".replace('0', opId);
 		const otherParams = {
 			headers:{"content-type":"application/json; charset=UTF-8"},
@@ -60,7 +61,7 @@
 	}
 
 	var putEditedTransaction = function(){
-		console.debug(opId);
+		console.debug("Saving: " + opId);
 		$.ajax({
             type: 'PUT',
             url: "{% url 'get_op_by_id' 0 %}?year={{ year }}".replace("0", opId),
@@ -69,10 +70,21 @@
         })
         .done(function(data){
         	messageBox("Saved!", "success");
+        	refreshTransactionRow(data);
         }).fail(function(data){
             console.error(data);
             messageBox("Error while editing operation. Check console logs.", "danger");
         })
+	}
+
+	var refreshTransactionRow = function(data){
+		console.debug("Updating row: " + opId + " with: " + data);
+		var editedRow = $("tr[op-id=" + opId + "]");
+		editedRow.find(".dateCell").html(data.date);
+		editedRow.find(".titleCell").html(data.title);
+		editedRow.find(".amountCell").html(data.amount);
+		editedRow.find(".userCell").html(data.user.name);
+		editedRow.find(".categoryCell").html(data.category.name);
 	}
 
     var cloneTransaction = function(){
