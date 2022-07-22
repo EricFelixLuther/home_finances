@@ -9,6 +9,9 @@ class OperationCategory(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ['name']
+
 
 class Operation(models.Model):
     title = models.CharField(max_length=256)
