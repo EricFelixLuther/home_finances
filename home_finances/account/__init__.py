@@ -1,4 +1,3 @@
 # TODO
-# edition and deletion of a single operation
-# filtering
+# deletion of a single operation (restricted to owning user)
 # charts based on filtering

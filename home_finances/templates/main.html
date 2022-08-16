@@ -4,11 +4,16 @@
 {% block extra_js %}
 <script type="text/javascript">
 	var opId = null;
+	var queryParams = window.location.search;
+	if (queryParams == ""){
+		queryParams = "?year={{ year }}";
+	}
+	//	var urlParams = new URLSearchParams(queryParams);
 
     var getTransactions = function(){
         $.ajax({
             type: 'GET',
-            url: "{% url 'get_operations' %}?year={{ year }}",
+            url: "{% url 'get_operations' %}" + queryParams,
         })
         .done(function(data){
             for (let li of data) {
@@ -82,7 +87,7 @@
 		console.debug("Saving as new: " + opId);
 		$.ajax({
             type: 'POST',
-            url: "{% url 'get_operations' %}?year={{ year }}",
+            url: "{% url 'get_operations' %}",
             headers: {"X-CSRFToken": $("input:hidden[name=csrfmiddlewaretoken]").val()},
             data: $("#transactionEditModalForm").serialize()
         })

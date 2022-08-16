@@ -1,5 +1,6 @@
 from datetime import date
 
+import django_filters
 from rest_framework import viewsets, permissions
 from account.models import Operation
 from account.serializers import OperationSerializer
@@ -8,13 +9,13 @@ from account.year_mixin import YearMixin
 
 class OperationsViewSet(YearMixin, viewsets.ModelViewSet):
     serializer_class = OperationSerializer
-    queryset = Operation.objects.all().order_by("-date", "title")
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = None
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
 
     def get_queryset(self):
         year = self._get_year(self.request)
-        return super().get_queryset().filter(
+        queryset = Operation.objects.filter(
             date__gte=date(
                 year=year,
                 month=1,
@@ -27,3 +28,5 @@ class OperationsViewSet(YearMixin, viewsets.ModelViewSet):
                 day=31
             )
         )
+        queryset = self.filter_queryset(queryset).order_by("-date", "id")
+        return queryset
