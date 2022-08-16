@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, modelform_factory
 from django.shortcuts import render
 from django.views import View
 
@@ -34,5 +34,6 @@ class MainView(LoginRequiredMixin, YearMixin, View):
 
     def _get_context(self, request, formset):
         return {"formset": formset,
+                "form": modelform_factory(Operation, fields="__all__"),
                 "year": self._get_year(request),
                 "all_years": self._get_all_years()}

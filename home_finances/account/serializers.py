@@ -1,34 +1,21 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from account.models import Operation, OperationCategory
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OperationCategory
-        fields = ("name", )
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ('first_name', 'last_name')
+from account.models import Operation
 
 
 class OperationSerializer(serializers.ModelSerializer):
-    category = serializers.SerializerMethodField()
-    user = serializers.SerializerMethodField()
-
     class Meta:
         model = Operation
-        fields = ('title', 'date', 'amount', 'category', 'user')
+        fields = ('pk', 'title', 'date', 'amount', 'category', 'user')
 
-    def get_user(self, obj):
-        return obj.user.first_name
-
-    def get_category(self, obj):
-        if obj.category:
-            return obj.category.name
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.category:
+            rep['category'] = {'id': instance.category.id,
+                               'name': instance.category.name}
         else:
-            return ''
+            rep['category'] = {'id': '',
+                               'name': ''}
+        rep['user'] = {'id': instance.user.id,
+                       'name': f'{instance.user.first_name} {instance.user.last_name}'}
+        return rep

@@ -3,31 +3,113 @@
 
 {% block extra_js %}
 <script type="text/javascript">
+	var opId = null;
+
     var getTransactions = function(){
         $.ajax({
             type: 'GET',
-            url: "api/operations/?year={{ year }}",
+            url: "{% url 'get_operations' %}?year={{ year }}",
         })
         .done(function(data){
             for (let li of data) {
+            	if (li.category != null){
+            		var category_name = li.category.name;
+            	} else {
+            		var category_name = '';
+				}
                 var tr = $("<tr>").append(
-                    $("<td>").append(li.date)
+                    $("<td>").addClass("dateCell").append(li.date)
                 ).append(
-                    $("<td>").append(li.title)
+                    $("<td>").addClass("titleCell").append(li.title)
                 ).append(
-                    $("<td>").append(li.amount)
+                    $("<td>").addClass("amountCell").append(li.amount)
                 ).append(
-                    $("<td>").append(li.user)
+                    $("<td>").addClass("userCell").append(li.user.name)
                 ).append(
-                    $("<td>").append(li.category)
-                )
+                    $("<td>").addClass("categoryCell").append(category_name)
+                ).attr("op-id", li.pk)
+                .attr("data-bs-toggle", "modal")
+				.attr("data-bs-target", "#editTransactionsModal")
+				.on("click", editTransaction)
+				.addClass("cursor_hand");
                 $("#operationsTable").append(tr);
             }
         }).fail(function(data){
-            console.log(data);
-            alert("Error. Check console logs.");
+            console.error(data);
+            messageBox("Error getting transactions. Check console logs.", "danger");
         })
     }
+
+	var editTransaction = function(event){
+		console.debug(event);
+		opId = event.currentTarget.getAttribute("op-id");
+		console.debug("Currently editing: " + opId);
+		var Url = "{% url 'get_op_by_id' 0 %}?year={{ year }}".replace('0', opId);
+		const otherParams = {
+			headers:{"content-type":"application/json; charset=UTF-8"},
+			method:"GET"
+		}
+		fetch(Url, otherParams)
+		.then(response=>response.json())
+		.then(data=>{
+			$("#id_title").val(data.title);
+			$("#id_date").val(data.date);
+			$("#id_amount").val(parseFloat(data.amount));
+			$("#id_category").val(data.category.id);
+			$("#id_user").val(data.user.id);
+		})
+	}
+
+	var putEditedTransaction = function(){
+		console.debug("Saving: " + opId);
+		$.ajax({
+            type: 'PUT',
+            url: "{% url 'get_op_by_id' 0 %}?year={{ year }}".replace("0", opId),
+            headers: {"X-CSRFToken": $("input:hidden[name=csrfmiddlewaretoken]").val()},
+            data: $("#transactionEditModalForm").serialize()
+        })
+        .done(function(data){
+        	messageBox("Saved!", "success");
+        	refreshTransactionRow(data);
+        	emptyAllCharts();
+        }).fail(function(data){
+            console.error(data);
+            messageBox("Error while editing operation. Check console logs.", "danger");
+        })
+	}
+
+	var postNewTransaction = function(){
+		console.debug("Saving as new: " + opId);
+		$.ajax({
+            type: 'POST',
+            url: "{% url 'get_operations' %}?year={{ year }}",
+            headers: {"X-CSRFToken": $("input:hidden[name=csrfmiddlewaretoken]").val()},
+            data: $("#transactionEditModalForm").serialize()
+        })
+        .done(function(data){
+        	messageBox("Saved new!", "success");
+        	addTransactionRow(data);
+        	emptyAllCharts();
+        }).fail(function(data){
+            console.error(data);
+            messageBox("Error while copying operation. Check console logs.", "danger");
+        })
+	}
+
+	var refreshTransactionRow = function(data){
+		console.debug("Updating row: " + opId + " with: " + data);
+		var editedRow = $("tr[op-id=" + opId + "]");
+		editedRow.find(".dateCell").html(data.date);
+		editedRow.find(".titleCell").html(data.title);
+		editedRow.find(".amountCell").html(data.amount);
+		editedRow.find(".userCell").html(data.user.name);
+		editedRow.find(".categoryCell").html(data.category.name);
+	}
+
+	var addTransactionRow = function(data){
+
+	}
+
     var cloneTransaction = function(){
     	let total_form = $('#id_form-TOTAL_FORMS');
 		let form_idx = total_form.val();
@@ -58,25 +140,48 @@
     }
 
     var getChart = function(url, div_id){
-    	$.ajax({
-            type: 'GET',
-            url: url + "?year={{ year }}",
-        })
-        .done(function(data){
-            $(div_id).append(data.div);
-            $("html").append(data.script);
-        }).fail(function(data){
-            console.log(data);
-            alert("Error while getting line chart. Check console logs.");
-        })
+    	if($(div_id).is(":empty")){
+    		$.ajax({
+				type: 'GET',
+				url: url + "?year={{ year }}",
+			})
+			.done(function(data){
+				$(div_id).append(data.div);
+				$("html").append(data.script);
+			}).fail(function(data){
+				console.error(data);
+				messageBox("Error while getting '" + div_id + "' chart. Check console logs.", "warning");
+			});
+    	}
     }
+
+	var getLineChart = function(){
+		getChart("{% url 'line_chart' %}", "#line");
+	}
+
+	var getExpensesBarChart = function(){
+		getChart("{% url 'expenses_bar' %}", "#expenses");
+	}
+
+	var getExpensesPieChart = function(){
+		getChart("{% url 'expenses_pie' %}", "#pie");
+	}
+
+	var getCategoriesPieChart = function(){
+		getChart("{% url 'categories_pie' %}", "#category-pie");
+	}
+
+	var emptyAllCharts = function(){
+		$("#line").empty();
+		$("#expenses").empty();
+		$("#pie").empty();
+		$("#category-pie").empty();
+	}
     $(document).ready(function(){
         getTransactions();
-        getChart("{% url 'line_chart' %}", "#line");
-        getChart("{% url 'expenses_chart' %}", "#expenses");
-        getChart("{% url 'expenses_pie' %}", "#pie");
-        getChart("{% url 'categories_pie' %}", "#category-pie");
+
         $(".transactionClone").click(cloneTransaction);
+
         $('#addTransactionModalEmpty').click(function () {
 			let total_form = $('#id_form-TOTAL_FORMS');
 			let form_idx = total_form.val();
@@ -91,6 +196,7 @@
 			$("tr[id=" + form_idx + "]").find(".transactionClone").click(cloneTransaction);
 			total_form.val(parseInt(form_idx)+1);
 		});
+
 		$("select#id_form-__prefix__-user").find("option[value={{ request.user.id }}]").attr("selected", "true");
     });
 </script>
@@ -99,6 +205,13 @@
 {% block extra_css %}
 <link href=”http://cdn.pydata.org/bokeh/release/bokeh-2.4.3.min.css" rel=”stylesheet” type=”text/css”>
 <link href=”http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.4.3.min.css" rel=”stylesheet” type=”text/css”>
+<style type="text/css">
+div#addNewTransactionButton {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+}
+</style>
 {% endblock %}
 
 {% block contents %}
@@ -106,7 +219,7 @@
 
 <div class="tab-content" id="myTabContent">
 	<div class="tab-pane fade active show" id="home" role="tabpanel" aria-labelledby="home-tab">
-		<table class="table">
+		<table class="table table-hover">
 			<thead>
 				<tr>
 					<th>Time</th>
@@ -130,6 +243,23 @@
 	  <i class="fas fa-edit mr-1"></i>Add new transactions
 	</button>
 </div>
+
+<table class="d-none">
+	<tbody id="empty_form">
+		<tr class="addTransactionsTableRow" id="TR_ID">
+		{% for field in formset.empty_form %}
+			<td>{% bootstrap_field field show_label=False %}</td>
+		{% endfor %}
+			<td>
+				<button type="button" class="btn btn-secondary transactionClone">
+					<i class="far fa-clone"></i>
+				</button>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+
 {% endblock %}
 
 {% block modals %}
@@ -187,21 +317,31 @@
 		</div>
 	</div>
 </div>
-<table class="d-none">
-	<tbody id="empty_form">
-		<tr class="addTransactionsTableRow" id="TR_ID">
-		{% for field in formset.empty_form %}
-			<td>{% bootstrap_field field show_label=False %}</td>
-		{% endfor %}
-			<td>
-				<button type="button" class="btn btn-secondary transactionClone">
-					<i class="far fa-clone"></i>
-				</button>
-			</td>
-		</tr>
-	</tbody>
-</table>
 
+<div id="editTransactionsModal" class="modal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Add more transactions</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<form id="transactionEditModalForm" method="POST">
+				<div class="modal-body">
+					{% bootstrap_form form layout=vertical %}
+					{% bootstrap_form_errors form %}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success" onclick="putEditedTransaction()">
+						<i class="fas fa-save"></i> Save
+					</button>
+					<button type="button" class="btn btn-primary" onclick="postNewTransaction()">
+						<i class="bi bi-plus-circle"></i> Save as new
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
 {% endblock %}
 
 {% block more_js %}
