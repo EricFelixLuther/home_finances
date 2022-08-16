@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    command: python home_finances/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+      - /var/log/home_finances:/var/log/home_finances
+    ports:
+      - "8010:8000"
