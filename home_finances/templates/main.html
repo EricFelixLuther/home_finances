@@ -8,9 +8,9 @@
 	if (queryParams == ""){
 		queryParams = "?year={{ year }}";
 	}
-	//	var urlParams = new URLSearchParams(queryParams);
 
     var getTransactions = function(){
+    	$("#operationsTable").empty();
         $.ajax({
             type: 'GET',
             url: "{% url 'get_operations' %}" + queryParams,
@@ -148,7 +148,7 @@
     	if($(div_id).is(":empty")){
     		$.ajax({
 				type: 'GET',
-				url: url + "?year={{ year }}",
+				url: url + queryParams,
 			})
 			.done(function(data){
 				$(div_id).append(data.div);
@@ -184,6 +184,11 @@
 	}
     $(document).ready(function(){
         getTransactions();
+
+		$("#searchSubmit").click(function(){
+			queryParams = queryParams + "&search=" + document.getElementById("searchInput").value;
+			getTransactions();
+		});
 
         $(".transactionClone").click(cloneTransaction);
 
@@ -244,7 +249,7 @@ div#addNewTransactionButton {
 </div>
 
 <div id="addNewTransactionButton">
-	<button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addTransactionsModal">
+	<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTransactionsModal">
 	  <i class="fas fa-edit mr-1"></i>Add new transactions
 	</button>
 </div>
