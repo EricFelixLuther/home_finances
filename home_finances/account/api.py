@@ -12,7 +12,7 @@ class OperationsViewSet(YearMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = None
     filter_backends = [filters.SearchFilter, django_filters.rest_framework.DjangoFilterBackend]
-    filterset_fields = ['title', 'category', 'user']
+    filterset_fields = ['title', 'category', 'user', 'tags']
     search_fields = ['title', 'user__first_name', 'category__name']
 
     def get_queryset(self):

@@ -13,12 +13,23 @@ class OperationCategory(models.Model):
         ordering = ['name']
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+
 class Operation(models.Model):
     title = models.CharField(max_length=256)
     date = models.DateField(default=now)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     category = models.ForeignKey(OperationCategory, on_delete=models.CASCADE, blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     def __str__(self):
         return self.title
