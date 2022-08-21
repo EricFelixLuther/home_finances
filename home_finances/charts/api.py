@@ -156,20 +156,16 @@ class ExpensesPieChartYearSummary(OperationsChartApiMixin, APIView):
 
     def get(self, request):
         operations = self.get_operations_from_year(request).filter(amount__lt=0)
-        expenses_per_months = {
-            "January": operations.filter(date__month=1).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "February": operations.filter(date__month=2).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "March": operations.filter(date__month=3).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "April": operations.filter(date__month=4).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "May": operations.filter(date__month=5).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "June": operations.filter(date__month=6).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "July": operations.filter(date__month=7).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "August": operations.filter(date__month=8).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "September": operations.filter(date__month=9).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "October": operations.filter(date__month=10).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "November": operations.filter(date__month=11).aggregate(exp_per_month=Sum("amount"))['exp_per_month'],
-            "December": operations.filter(date__month=12).aggregate(exp_per_month=Sum("amount"))['exp_per_month']
-        }
+        months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        expenses_per_months = {}
+        for i, month in enumerate(months):
+            expenses_per_current_month = operations.filter(
+                    date__month=i + 1
+                ).aggregate(
+                    exp_per_month=Sum("amount")
+                )['exp_per_month']
+            if expenses_per_current_month:
+                expenses_per_months[month] = round(expenses_per_current_month, 0)
         data = pandas.Series(expenses_per_months).reset_index(name='value').rename(columns={'index': 'month'})
         data['angle'] = data['value'] / data['value'].sum() * 2 * Decimal(pi)
         data['color'] = Category20c[len(expenses_per_months)]
